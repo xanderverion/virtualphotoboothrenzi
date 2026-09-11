@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Unified design tokens — matched to the Feed page (reference theme)
+   Warm broken-white canvas, maroon type/accent, Roboto for headings,
+   Inter Tight for body copy. No green accent — maroon is the single
+   chromatic identity across every page.
+------------------------------------------------------------------- */
+@theme {
+  /* Surfaces */
+  --color-canvas: #f7f2e9;
+  /* page background — same as broken-white */
+  --color-panel: #efe4d3;
+  /* nested / footer surface */
+  --color-cream: #fffce1;
+  /* primary text, borders, headings */
+  --color-muted: #7c7c6f;
+  /* secondary text, disabled labels */
+  --color-hairline: #42433d;
+  /* dividers, low-contrast outlines */
+
+  /* Accent — the only chromatic escalation allowed */
+  --color-accent: #6b1420;
+  /* maroon */
+  --color-accent-light: #9c3b48;
+  /* lighter maroon/rose */
+  --color-accent-soft: #f0dde0;
+  /* pale rose wash */
+
+  /* Wedding-preview surface */
+  --color-maroon: #6b1420;
+  /* full-view / preview modal background */
+  --color-maroon-deep: #4c0e17;
+  /* divider / footer accent on maroon */
+  --color-broken-white: #f7f2e9;
+  /* off-white surfaces on maroon (photo card, audio pill) */
+
+  /* Typography — 3-role system ported from theme.js (DESIGN.md):
+     display (Poppins) = big hero/page titles, heading (Montserrat) =
+     card headers/subtitles, body (Roboto) = running text/buttons/captions. */
+  --font-display: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Montserrat", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Roboto", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Legacy aliases kept so any existing font-inter/font-mori/font-roboto
+     usage in components still resolves without a rewrite pass. */
+  --font-inter: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mori: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-roboto: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-playfair: "Great Vibes", cursive;
+  --font-couple: "Birthstone", cursive;
+  /* dedicated script font for the couple's name ("Randy & Azizah"),
+     kept separate from font-playfair (Great Vibes) which is used elsewhere. */
+
+  /* Radius */
+  --radius-card: 8px;
+  --radius-pill: 100px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-maroon);
+  font-family: var(--font-body);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+@keyframes equalizer {
+
+  0%,
+  100% {
+    height: 4px;
+  }
+
+  50% {
+    height: 16px;
+  }
+}
+
+.visualizer-bar {
+  animation: equalizer 1s ease-in-out infinite;
+}
+
+.visualizer-bar:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.visualizer-bar:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.visualizer-bar:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+/* Maroon solid CTA pill — the single chromatic control in the system */
+.gradient-pill {
+  position: relative;
+  border-radius: var(--radius-pill);
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  transition: opacity 0.2s ease;
+}
+
+.gradient-pill:hover {
+  opacity: 0.85;
+}
+
+/* Solid maroon pill — default interactive control, cream text */
+.ghost-pill {
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-maroon);
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  transition: opacity 0.2s ease;
+}
+
+.ghost-pill:hover {
+  opacity: 0.85;
+}

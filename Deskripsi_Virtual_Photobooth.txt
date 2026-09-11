@@ -1,0 +1,99 @@
+Berikut adalah rincian lengkap dari project Virtual Photobooth yang telah dibangun. Project ini dirancang sebagai aplikasi web berbasis mobile-first (tampilan khusus mobile/smartphone yang dipusatkan di tengah layar) yang berfungsi sebagai platform interaktif bagi tamu undangan pernikahan untuk berfoto, merekam video ucapan, serta melihat momen kebersamaan. 
+
+Project ini secara spesifik di-custom untuk pernikahan (seperti yang tertera pada font couple, yakni pernikahan "Randy & Azizah") dengan mengusung tema adat/elegan bergaya Minang.
+
+-------------------------------------------------------------------------------
+1. Deskripsi Umum & Konsep UI/UX
+-------------------------------------------------------------------------------
+Aplikasi ini berjalan dalam frame berukuran mobile (lebar maksimum 480px) di tengah layar desktop/perangkat yang lebih besar, namun akan tampak penuh (full screen) jika diakses langsung dari HP. 
+
+Alih-alih menggunakan desain yang terkesan standar, UI/UX project ini didesain agar terasa hangat, klasik, sekaligus modern. 
+
+-------------------------------------------------------------------------------
+2. Tema & Palet Warna
+-------------------------------------------------------------------------------
+Berdasarkan file index.css, desainnya menggunakan identitas warna broken-white yang hangat dipadukan dengan warna Maroon sebagai aksen utama (Tema Minang). Tidak ada warna mencolok lain (seperti hijau atau biru) — maroon adalah satu-satunya warna primer.
+
+Rincian Warna:
+- Canvas / Background (#f7f2e9): Warna putih tulang (broken-white) yang hangat sebagai latar belakang utama halaman.
+- Panel (#efe4d3): Warna nested/footer yang sedikit lebih gelap dari canvas.
+- Cream (#fffce1): Digunakan untuk teks terang atau border.
+- Maroon (#6b1420): Warna identitas utama (accent). Digunakan untuk tombol utama (CTA), latar belakang modal, teks utama, dan elemen penegas lainnya.
+- Maroon Deep (#4c0e17): Maroon yang lebih gelap untuk garis pemisah (divider) atau footer.
+- Accent Light (#9c3b48) & Soft (#f0dde0): Variasi warna rose/merah muda pucat sebagai bayangan atau efek hover.
+
+Tombol (Button):
+Gaya kontrol dan tombol semuanya menggunakan lengkungan penuh (pill-shaped border-radius: 100px) baik berupa tombol solid maroon maupun ghost-pill bergaris tepi maroon.
+
+-------------------------------------------------------------------------------
+3. Tipografi (Font)
+-------------------------------------------------------------------------------
+Proyek ini mengadopsi 3 peran tipografi utama untuk menjaga hierarki informasi, ditambah font kaligrafi khusus pernikahan:
+1. Display (Poppins): Untuk judul halaman atau teks hero berukuran besar.
+2. Heading (Montserrat): Untuk header kartu atau sub-judul.
+3. Body (Roboto / Inter Tight): Untuk teks paragraf biasa, caption, dan teks di dalam tombol.
+4. Font Dekoratif Pernikahan:
+   - Birthstone (font-couple): Font script/tegak bersambung khusus untuk menuliskan nama pengantin ("Randy & Azizah").
+   - Great Vibes (font-playfair): Font kaligrafi elegan untuk elemen dekoratif lainnya.
+
+-------------------------------------------------------------------------------
+4. Struktur Halaman & Fitur Utama (Routing)
+-------------------------------------------------------------------------------
+Aplikasi ini dibangun menggunakan React Router dengan transisi antar-halaman (framer-motion). Berikut adalah halaman-halaman yang tersedia:
+
+- Halaman Beranda / Home ( / )
+  - Layar penyambutan yang berisi judul, kemungkinan nama pengantin, dan tombol navigasi utama.
+  - Berisi tautan untuk masuk ke fitur Capture (Foto/Video), serta tautan ke Wedding Book dan Memory Wall.
+
+- Halaman Capture / Kamera ( /capture )
+  - Ini adalah fitur paling inti. Pengguna dapat memilih untuk:
+    - Take Photo: Berfoto menggunakan kamera depan perangkat. Tersedia juga fitur frame khusus (misal: netflix-classic, netflix-movie).
+    - Record Video: Merekam video pendek (lengkap dengan akses mikrofon/audio) untuk memberikan ucapan langsung kepada pengantin.
+    - Write Wishes: Menulis teks ucapan atau doa kepada pengantin.
+  - Terdapat alur pemilihan jenis entri, izin webcam/mic, preview hasil, hingga proses upload ke cloud storage (Supabase).
+
+- Halaman Feed Interaktif ( /feed )
+  - Menampilkan linimasa (timeline) dari semua unggahan para tamu secara real-time.
+  - Entri foto akan langsung terlihat, entri video akan memiliki ikon "Play", dan ucapan teks akan dirender menjadi kartu visual (wishes card).
+  - Dilengkapi dengan FullViewModal jika salah satu kartu ditekan untuk melihat konten dalam ukuran penuh.
+
+- Halaman Wedding Book ( /book )
+  - Buku tamu digital dengan antarmuka menyerupai buku kenangan pernikahan.
+  - Tempat kumpulan ucapan-ucapan tamu direkapitulasi secara rapi dan estetis.
+
+- Halaman Memory Wall ( /memory-wall )
+  - Dinding memori (mungkin berupa grid/masonry) yang menyatukan seluruh foto dan visual dari acara pernikahan untuk dilihat layaknya galeri berjalan.
+
+- Halaman Bride Gallery ( /bride )
+  - Halaman galeri khusus yang mungkin didedikasikan untuk menampilkan foto pre-wedding atau foto resmi pengantin.
+
+- Halaman Bride QR ( /bride/qr )
+  - Menampilkan kode QR. Biasanya ini dicetak dan diletakkan di meja-meja tamu. Tamu cukup memindai QR ini melalui HP mereka untuk langsung masuk ke halaman Virtual Photobooth tanpa perlu mengunduh aplikasi.
+
+-------------------------------------------------------------------------------
+5. Cara Penggunaan (Alur Tamu Undangan)
+-------------------------------------------------------------------------------
+1. Scan & Masuk: Tamu tiba di tempat acara atau berada di rumah (jika virtual), melakukan scan QR code yang tersedia (dari halaman /bride/qr), atau mengklik tautan (link).
+2. Layar Awal (Home): Tamu akan melihat sambutan acara pernikahan.
+3. Berpartisipasi (Capture): 
+   - Tamu menekan tombol "Buat kenangan".
+   - Tamu dihadapkan pada 3 pilihan: Kirim Foto, Kirim Video, atau Tulisan Saja.
+   - Tamu memilih bingkai (khusus jika memilih foto) dan masuk ke layar kamera/teks.
+   - Tamu mengizinkan akses kamera/mikrofon di browser mereka, lalu merekam video/foto, atau mengetik teks.
+4. Publikasi & Melihat Hasil:
+   - Di langkah terakhir, tamu memasukkan nama mereka. Khusus untuk foto dan video, tamu juga bisa menambahkan caption dan rekaman suara (opsional).
+   - Tamu melihat preview hasil tangkapan.
+   - Tamu memilih mode privasi (publik/privat), lalu menekan tombol "Publish Foto/Video/Ucapan".
+   - File akan diunggah (ke bucket Supabase Photos, Videos, dan Audio), lalu data teksnya disimpan di database.
+   - Setelah sukses, tamu bisa melihat hasilnya di layar Feed atau mengunduhnya.
+
+-------------------------------------------------------------------------------
+6. Arsitektur & Tech Stack
+-------------------------------------------------------------------------------
+- Frontend: Vite + React.js. 
+- Routing & Animasi: React Router Dom & Framer Motion (untuk transisi halaman dan elemen loading yang mulus).
+- Styling: Tailwind CSS v4 terintegrasi melalui index.css (dengan token variabel warna khusus yang ketat).
+- Backend / Database & Storage: Supabase. 
+  - Menggunakan tabel 'entries' (dengan kolom type: 'photo', 'video', atau 'wishes', serta photo_url dan video_url).
+  - Menggunakan Supabase Storage dengan bucket Publik: Photos, Videos, dan Audio.
+- Linter: Oxc / Oxlint (ditandai dari konfigurasi .oxlintrc.json).
