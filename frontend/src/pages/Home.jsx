@@ -10,7 +10,7 @@ export default function Home() {
       {/* Top Section (Image & Hero) */}
       <div className="relative w-full flex-[3] min-h-0 flex flex-col items-center justify-end pb-4">
         <img
-          src="/Gallery3.jpg"
+          src="/akad.jpg"
           alt="Pre-wedding"
           className="absolute inset-0 w-full h-full object-cover object-top opacity-70"
         />

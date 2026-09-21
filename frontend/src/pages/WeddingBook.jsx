@@ -53,7 +53,7 @@ const pages = [
   },
   {
     type: 'image',
-    src: '/wedding-journal-2.png',
+    src: '/wedding-journal-2.jpg',
     caption: "Awal dari 'selamanya' kami.",
   },
   { type: 'closing' },

@@ -72,7 +72,7 @@ export default function Feed() {
         {/* Banner Section */}
         <div className="relative w-full h-64 overflow-hidden shrink-0">
           <img
-            src="/banner-gallery.jpg"
+            src="/vpbgallery.jpg"
             alt="Banner"
             className="absolute inset-0 w-full h-full object-cover object-top"
           />
@@ -86,10 +86,10 @@ export default function Feed() {
           </button>
 
           <div className="absolute bottom-6 left-6 right-6 text-left">
-            <p className="text-maroon text-[10px] font-normal tracking-[0.2em] uppercase mb-1 ml-1">
+            <p className="text-white text-[10px] font-normal tracking-[0.2em] uppercase mb-1 ml-1">
               Wedding Gallery
             </p>
-            <h1 className="text-maroon text-4xl font-heading font-bold drop-shadow-md">
+            <h1 className="text-white text-4xl font-heading font-bold drop-shadow-md">
               Azizah &amp; Randy
             </h1>
           </div>
