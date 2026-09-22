@@ -12,10 +12,10 @@ export default function Home() {
         <img
           src="/akad.jpg"
           alt="Pre-wedding"
-          className="absolute inset-0 w-full h-full object-cover object-top opacity-70"
+          className="absolute inset-0 w-full h-full object-cover object-top"
         />
-        <div className="absolute inset-0 bg-canvas/30 mix-blend-multiply"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-canvas/60 via-transparent via-60% to-canvas"></div>
+
+
         {/* Extra bottom gradient to ensure a completely smooth merge with the bottom section */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-canvas to-transparent"></div>
 
