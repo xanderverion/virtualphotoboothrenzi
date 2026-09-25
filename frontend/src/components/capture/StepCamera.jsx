@@ -175,7 +175,7 @@ export default function StepCamera({
             className={`w-full h-full object-cover ${isMirrored ? 'scale-x-[-1]' : ''}`}
             onUserMediaError={(err) => {
               console.error("Webcam error:", err);
-              showAlert("Tidak dapat mengakses kamera. Pastikan Anda telah memberikan izin kamera pada browser.");
+              showAlert("Tidak dapat mengakses kamera. Pastikan kamu telah memberikan izin kamera pada browser.");
             }}
           />
 

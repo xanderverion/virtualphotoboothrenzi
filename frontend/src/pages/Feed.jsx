@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, BookOpen, LayoutGrid, Camera,
-  Heart, Share, Grid, Film, MessageCircleHeart, Check
+  BookOpen, LayoutGrid, Camera, Home,
+  Heart, Grid, Film, MessageCircleHeart
 } from 'lucide-react';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useFeedEntries } from '../hooks/useFeedEntries';
@@ -15,7 +15,7 @@ export default function Feed() {
   const { entries: feed, loading } = useFeedEntries();
   const [fullViewItem, setFullViewItem] = useState(null);
   const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'reels', 'wishes'
-  const [copied, setCopied] = useState(false);
+
 
   const {
     playingId,
@@ -48,15 +48,7 @@ export default function Feed() {
     return [];
   }, [feed, activeTab]);
 
-  const handleShareProfile = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy', err);
-    }
-  };
+
 
   if (loading) {
     return (
@@ -78,12 +70,6 @@ export default function Feed() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent via-70% to-[#fdfaf6]"></div>
 
-          <button
-            onClick={() => navigate('/')}
-            className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center bg-[#fdfaf6] shadow-sm text-maroon rounded-full hover:bg-white transition-colors z-10"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
 
           <div className="absolute bottom-6 left-6 right-6 text-left">
             <p className="text-white text-[10px] font-normal tracking-[0.2em] uppercase mb-1 ml-1">
@@ -130,12 +116,13 @@ export default function Feed() {
               </button>
 
               <button
-                onClick={handleShareProfile}
+                onClick={() => navigate('/')}
                 className="w-full py-3.5 px-4 rounded-xl bg-white text-maroon border border-[#e8dcc7] flex items-center justify-center gap-2 font-semibold hover:bg-maroon/5 transition-colors shadow-sm"
               >
-                {copied ? <Check className="w-5 h-5 text-green-600" /> : <Share className="w-5 h-5" />}
-                {copied ? 'Tersalin!' : 'Bagikan profil'}
+                <Home className="w-5 h-5" />
+                Beranda
               </button>
+
             </div>
           </div>
 
@@ -212,7 +199,7 @@ export default function Feed() {
                 Belum ada {activeTab === 'posts' ? 'foto' : activeTab === 'reels' ? 'video' : 'ucapan'}
               </h3>
               <p className="text-[13px] text-maroon/60 leading-relaxed max-w-[250px]">
-                {activeTab === 'posts' && 'Foto dan GIF tamu akan tampil di tab posts.'}
+                {activeTab === 'posts' && 'Foto tamu akan tampil di tab posts.'}
                 {activeTab === 'reels' && 'Video Reels tamu akan tampil di sini.'}
                 {activeTab === 'wishes' && 'Ucapan tamu akan tampil di sini.'}
               </p>

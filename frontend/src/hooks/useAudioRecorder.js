@@ -63,7 +63,7 @@ export function useAudioRecorder() {
 
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      showAlert("Tidak dapat mengakses mikrofon. Pastikan Anda telah memberikan izin mikrofon pada browser.");
+      showAlert("Tidak dapat mengakses mikrofon. Pastikan kamu telah memberikan izin mikrofon pada browser.");
     }
   };
 

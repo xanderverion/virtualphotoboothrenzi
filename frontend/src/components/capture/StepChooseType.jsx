@@ -78,7 +78,7 @@ export default function StepChooseType({ onSelect, pageVariants }) {
 
       <div className="text-center mb-6">
         <p className="text-maroon/60 text-xs px-4">
-          Pilih bagaimana Anda ingin mengabadikan momen
+          Pilih bagaimana kamu ingin mengabadikan momen
         </p>
       </div>
 

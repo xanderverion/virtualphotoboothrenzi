@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Play, Pause, Download } from 'lucide-react';
+import { Play, Pause, Download, Check } from 'lucide-react';
 
 export default function FeedCard({
   item,
@@ -7,7 +7,10 @@ export default function FeedCard({
   playingId,
   setFullViewItem,
   handlePlayAudio,
-  showDownloadButton = false
+  showDownloadButton = false,
+  selectMode = false,
+  isSelected = false,
+  onToggleSelect
 }) {
   const isPlaying = playingId === item.id;
 
@@ -39,17 +42,32 @@ export default function FeedCard({
     .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
     .replace(':', '.');
 
+  const handleClick = () => {
+    if (selectMode && onToggleSelect) {
+      onToggleSelect(item.id);
+    } else {
+      setFullViewItem(item);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.4 }}
-      className="mb-4 break-inside-avoid rounded-2xl overflow-hidden bg-cream border border-maroon/10 shadow-md cursor-pointer group"
-      onClick={() => setFullViewItem(item)}
+      className={`mb-4 break-inside-avoid rounded-2xl overflow-hidden bg-cream border shadow-md cursor-pointer group ${selectMode && isSelected ? 'border-[#e4d5b7] border-2 ring-2 ring-[#e4d5b7]/40' : 'border-maroon/10'}`}
+      onClick={handleClick}
     >
       {/* Media */}
       <div className="relative w-full">
-        {showDownloadButton && item.type !== 'wishes' && (
+        {/* Selection checkbox overlay */}
+        {selectMode && (
+          <div className={`absolute top-2 left-2 z-20 w-7 h-7 rounded-full flex items-center justify-center transition-all ${isSelected ? 'bg-[#e4d5b7] text-[#2a1a1f]' : 'bg-black/40 border-2 border-white/60'}`}>
+            {isSelected && <Check className="w-4 h-4" strokeWidth={3} />}
+          </div>
+        )}
+
+        {showDownloadButton && !selectMode && item.type !== 'wishes' && (
           <button
             onClick={handleDownload}
             className="absolute top-2 right-2 z-10 w-8 h-8 border border-white/20 bg-black/40 backdrop-blur-md text-white hover:bg-black/60 rounded-full flex items-center justify-center transition-colors shadow-sm"
@@ -92,7 +110,7 @@ export default function FeedCard({
           />
         )}
 
-        {item.type !== 'wishes' && item.audioUrl && (
+        {!selectMode && item.type !== 'wishes' && item.audioUrl && (
           <button
             onClick={(e) => {
               e.stopPropagation();

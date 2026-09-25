@@ -186,7 +186,7 @@ export default function StepVideoCapture({ onNext, onBack, pageVariants }) {
             className="w-full h-full object-cover"
             onUserMediaError={(err) => {
               console.error('Webcam error:', err);
-              showAlert('Tidak dapat mengakses kamera/mikrofon. Pastikan Anda telah memberikan izin pada browser.');
+              showAlert('Tidak dapat mengakses kamera/mikrofon. Pastikan kamu telah memberikan izin pada browser.');
             }}
           />
         ) : (

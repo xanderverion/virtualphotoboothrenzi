@@ -123,7 +123,7 @@ export default function StepUploadAndSuccess({
         </div>
 
         <p className="text-muted text-xs text-center max-w-[280px] mx-auto mb-6">
-          Lengkapi detail memori Anda di bawah ini sebelum membagikannya ke Wedding Gallery.
+          Lengkapi detail kenangan kamu di bawah ini sebelum membagikannya ke Wedding Gallery.
         </p>
 
         {/* Preview Foto Card */}
@@ -253,7 +253,7 @@ export default function StepUploadAndSuccess({
                   className="w-full bg-white rounded-2xl py-4 pl-10 pr-4 text-maroon focus:outline-none border border-transparent focus:border-accent/30 shadow-sm min-h-[120px] resize-none transition-colors text-sm"
                 />
               </div>
-              <p className="text-muted text-[11px] mt-2 ml-1">Caption tampil bersama foto atau GIF di Wedding Gallery.</p>
+              <p className="text-muted text-[11px] mt-2 ml-1">Caption tampil bersama foto di Wedding Gallery.</p>
             </div>
           )}
 
@@ -325,8 +325,8 @@ export default function StepUploadAndSuccess({
           </svg>
         </div>
         <div>
-          <h2 className="text-3xl font-semibold tracking-tight text-maroon mb-2 font-display">Sukses!</h2>
-          <p className="text-muted">Kenangan Anda telah disimpan di galeri.</p>
+          <h2 className="text-3xl font-semibold tracking-tight text-maroon mb-2 font-display">Terima kasih!</h2>
+          <p className="text-muted">Kenangan kamu telah disimpan di galeri.</p>
         </div>
 
         <div className="flex flex-col gap-2 w-full max-w-[280px] mx-auto mt-8">

@@ -180,7 +180,7 @@ export default function Capture() {
         (contentType === 'video' && !uploadedVideoUrl) ||
         (contentType === 'voice' && !audioUrl)
       ) {
-        showAlert('Nama dan konten wajib diisi.');
+        showAlert('Nama wajib diisi.');
         setUploading(false);
         return;
       }

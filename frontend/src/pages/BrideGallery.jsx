@@ -1,11 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Lock, QrCode, Search, Grid, Film, MessageCircleHeart } from 'lucide-react';
+import { ArrowLeft, Lock, QrCode, Search, Grid, Film, MessageCircleHeart, CheckSquare, X, Download, CheckCheck } from 'lucide-react';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useFeedEntries } from '../hooks/useFeedEntries';
 import FeedCard from '../components/feed/FeedCard';
 import FullViewModal from '../components/feed/FullViewModal';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export default function BrideGallery() {
   const navigate = useNavigate();
@@ -14,6 +16,12 @@ export default function BrideGallery() {
   const [fullViewItem, setFullViewItem] = useState(null);
   const [activeTab, setActiveTab] = useState('posts');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Bulk download state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState({ current: 0, total: 0 });
 
   const filteredFeed = useMemo(() => {
     let filtered = feed;
@@ -40,6 +48,80 @@ export default function BrideGallery() {
     stopAudio();
     setFullViewItem(null);
   };
+
+  const toggleSelectMode = () => {
+    setSelectMode(prev => !prev);
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelect = useCallback((id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const selectAll = () => {
+    // Only select downloadable items (photo/video) from current filtered feed
+    const downloadable = filteredFeed.filter(item => item.type !== 'wishes');
+    if (selectedIds.size === downloadable.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(downloadable.map(item => item.id)));
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    if (selectedIds.size === 0) return;
+
+    setDownloading(true);
+    const zip = new JSZip();
+    const selectedItems = feed.filter(item => selectedIds.has(item.id));
+    const total = selectedItems.length;
+    let current = 0;
+
+    setDownloadProgress({ current: 0, total });
+
+    for (const item of selectedItems) {
+      try {
+        const url = item.type === 'video' ? item.videoUrl : item.photoUrl;
+        if (!url) continue;
+
+        const response = await fetch(url);
+        const blob = await response.blob();
+
+        const safeName = (item.name || 'unknown').replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_');
+        const ext = item.type === 'video' ? 'mp4' : 'jpg';
+        const folder = item.type === 'video' ? 'videos' : 'photos';
+        const filename = `${folder}/${safeName}_${item.id}.${ext}`;
+
+        zip.file(filename, blob);
+        current++;
+        setDownloadProgress({ current, total });
+      } catch (err) {
+        console.error(`Failed to download ${item.id}:`, err);
+        current++;
+        setDownloadProgress({ current, total });
+      }
+    }
+
+    try {
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `wedding-memories-${Date.now()}.zip`);
+    } catch (err) {
+      console.error('Failed to generate ZIP:', err);
+    } finally {
+      setDownloading(false);
+      setDownloadProgress({ current: 0, total: 0 });
+    }
+  };
+
+  const downloadableCount = filteredFeed.filter(item => item.type !== 'wishes').length;
 
   if (loading) {
     return (
@@ -91,29 +173,61 @@ export default function BrideGallery() {
             />
           </div>
         </div>
+
+        {/* Select / Download Toggle */}
+        {activeTab !== 'wishes' && (
+          <div className="mt-4 max-w-[320px] mx-auto">
+            <button
+              onClick={toggleSelectMode}
+              className={`w-full py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-semibold transition-all ${selectMode ? 'bg-white/10 text-[#e4d5b7] border border-[#e4d5b7]/30' : 'bg-[#e4d5b7]/10 text-[#e4d5b7] border border-transparent hover:border-[#e4d5b7]/20'}`}
+            >
+              {selectMode ? (
+                <><X className="w-4 h-4" /> Batal Pilih</>
+              ) : (
+                <><CheckSquare className="w-4 h-4" /> Pilih & Download</>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-white/10 sticky top-0 bg-[#2a1a1f]/95 backdrop-blur z-20 shrink-0 px-4">
         <button
-          onClick={() => setActiveTab('posts')}
+          onClick={() => { setActiveTab('posts'); setSelectedIds(new Set()); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-semibold tracking-widest transition-colors ${activeTab === 'posts' ? 'text-[#e4d5b7] border-b-[1.5px] border-[#e4d5b7] -mb-[1px]' : 'text-[#e4d5b7]/40 hover:text-[#e4d5b7]/70'}`}
         >
           <Grid className="w-3.5 h-3.5" /> POSTS
         </button>
         <button
-          onClick={() => setActiveTab('reels')}
+          onClick={() => { setActiveTab('reels'); setSelectedIds(new Set()); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-semibold tracking-widest transition-colors ${activeTab === 'reels' ? 'text-[#e4d5b7] border-b-[1.5px] border-[#e4d5b7] -mb-[1px]' : 'text-[#e4d5b7]/40 hover:text-[#e4d5b7]/70'}`}
         >
           <Film className="w-3.5 h-3.5" /> REELS
         </button>
         <button
-          onClick={() => setActiveTab('wishes')}
+          onClick={() => { setActiveTab('wishes'); setSelectMode(false); setSelectedIds(new Set()); }}
           className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-semibold tracking-widest transition-colors ${activeTab === 'wishes' ? 'text-[#e4d5b7] border-b-[1.5px] border-[#e4d5b7] -mb-[1px]' : 'text-[#e4d5b7]/40 hover:text-[#e4d5b7]/70'}`}
         >
           <MessageCircleHeart className="w-3.5 h-3.5" /> WISHES
         </button>
       </div>
+
+      {/* Select All bar */}
+      {selectMode && downloadableCount > 0 && (
+        <div className="shrink-0 px-4 py-2.5 bg-[#e4d5b7]/10 border-b border-white/5 flex items-center justify-between">
+          <button
+            onClick={selectAll}
+            className="flex items-center gap-2 text-[#e4d5b7] text-xs font-semibold hover:text-white transition-colors"
+          >
+            <CheckCheck className="w-4 h-4" />
+            {selectedIds.size === downloadableCount ? 'Batal pilih semua' : `Pilih semua (${downloadableCount})`}
+          </button>
+          <span className="text-[#e4d5b7]/60 text-xs">
+            {selectedIds.size} dipilih
+          </span>
+        </div>
+      )}
 
       {/* Gallery grid */}
       {filteredFeed.length === 0 ? (
@@ -137,13 +251,47 @@ export default function BrideGallery() {
                   playingId={playingId}
                   setFullViewItem={setFullViewItem}
                   handlePlayAudio={handlePlayAudio}
-                  showDownloadButton={true}
+                  showDownloadButton={!selectMode}
+                  selectMode={selectMode && item.type !== 'wishes'}
+                  isSelected={selectedIds.has(item.id)}
+                  onToggleSelect={toggleSelect}
                 />
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Floating Download Bar */}
+      <AnimatePresence>
+        {selectMode && selectedIds.size > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', bounce: 0.2 }}
+            className="absolute bottom-6 left-4 right-4 z-30"
+          >
+            <button
+              onClick={handleBulkDownload}
+              disabled={downloading}
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#e4d5b7] to-[#c9b896] text-[#2a1a1f] font-bold text-sm flex items-center justify-center gap-2 shadow-xl shadow-black/30 disabled:opacity-70 transition-opacity"
+            >
+              {downloading ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-[#2a1a1f] border-t-transparent rounded-full animate-spin" />
+                  <span>Mengunduh {downloadProgress.current}/{downloadProgress.total}...</span>
+                </div>
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  Download {selectedIds.size} item
+                </>
+              )}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Full View Modal */}
       <AnimatePresence>

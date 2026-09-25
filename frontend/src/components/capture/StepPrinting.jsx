@@ -189,7 +189,7 @@ export default function StepPrinting({
             >
               Gunakan Foto Ini <ArrowRight className="w-4 h-4" />
             </button>
-            <GhostPill onClick={retakePhoto} className="w-full mt-2">
+            <GhostPill onClick={retakePhoto} className="w-full mt-2 h-12">
               Foto Ulang
             </GhostPill>
           </div>

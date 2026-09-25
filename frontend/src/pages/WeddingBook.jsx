@@ -41,8 +41,7 @@ const pages = [
   },
   {
     type: 'video',
-    src: '/video-journal.mp4',
-    poster: '',
+    src: 'https://www.youtube.com/embed/Esnbf6QPl3U',
     caption: 'Perjalanan kecil yang selalu kami syukuri.',
   },
   {
@@ -163,21 +162,14 @@ function VideoPage({ page, pageNumber, total, active }) {
     <div className="absolute inset-0 bg-canvas rounded-lg border border-accent/20 shadow-xl flex flex-col overflow-hidden">
       <div className="flex-1 min-h-0 flex items-center justify-center bg-black relative">
         {page.src ? (
-          // Mounting this element is what triggers playback, so it only renders once the
-          // page has actually arrived (or is arriving) — see `active` below.
           active && (
-            <video
+            <iframe
               src={page.src}
-              poster={page.poster || undefined}
-              className="w-full h-full object-cover select-none [-webkit-touch-callout:none]"
-              style={{ pointerEvents: 'none' }}
-              autoPlay
-              muted
-              loop
-              playsInline
-              disablePictureInPicture
-              disableRemotePlayback
-              onContextMenu={(e) => e.preventDefault()}
+              title={page.caption || 'Video'}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              frameBorder="0"
             />
           )
         ) : (
