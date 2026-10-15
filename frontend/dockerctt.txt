@@ -1,0 +1,2 @@
+docker build -t virtual-nikahan-renzi .
+docker run -d --name virtual-nikahan-renzi -p 8081:80 --restart unless-stopped virtual-nikahan-renzi
