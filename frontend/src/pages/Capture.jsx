@@ -1,32 +1,21 @@
-import { useState, useRef } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { FRAMES } from '../constants/frames';
-import { useAudioRecorder } from '../hooks/useAudioRecorder';
-import { usePhotoCapture } from '../hooks/usePhotoCapture';
-import { useAlert } from '../contexts/AlertContext';
+import { useState, useRef } from "react";
+import { AnimatePresence } from "framer-motion";
+import axios from "axios";
+import { FRAMES } from "../constants/frames";
+import { useAudioRecorder } from "../hooks/useAudioRecorder";
+import { usePhotoCapture } from "../hooks/usePhotoCapture";
+import { useAlert } from "../contexts/AlertContext";
 
-import StepInfo from '../components/capture/StepInfo';
-import StepChooseType from '../components/capture/StepChooseType';
-import StepCamera from '../components/capture/StepCamera';
-import StepVideoCapture from '../components/capture/StepVideoCapture';
-import StepWishes from '../components/capture/StepWishes';
-import StepVoiceCapture from '../components/capture/StepVoiceCapture';
-import StepAudioCaption from '../components/capture/StepAudioCaption';
-import StepUploadAndSuccess from '../components/capture/StepUploadAndSuccess';
+import StepInfo from "../components/capture/StepInfo";
+import StepChooseType from "../components/capture/StepChooseType";
+import StepCamera from "../components/capture/StepCamera";
+import StepVideoCapture from "../components/capture/StepVideoCapture";
+import StepWishes from "../components/capture/StepWishes";
+import StepVoiceCapture from "../components/capture/StepVoiceCapture";
+import StepUploadAndSuccess from "../components/capture/StepUploadAndSuccess";
 
-import { supabase } from '../lib/supabaseClient';
-
-// Tentukan ekstensi file berdasarkan mimeType asli dari Blob audio/video,
-// supaya nama file & contentType selalu cocok dengan isi sebenarnya
-// (mis. iPhone merekam audio/mp4, Android merekam audio/webm).
-const getExtensionFromMime = (mimeType, fallback = 'webm') => {
-  if (!mimeType) return fallback;
-  if (mimeType.includes('mp4')) return 'mp4';
-  if (mimeType.includes('aac')) return 'aac';
-  if (mimeType.includes('ogg')) return 'ogg';
-  if (mimeType.includes('webm')) return 'webm';
-  return fallback;
-};
+// Set URL API lu di .env (contoh: VITE_API_URL=https://api.domain.com)
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Capture() {
   const { showAlert } = useAlert();
@@ -35,16 +24,18 @@ export default function Capture() {
   const [step, setStep] = useState(1);
 
   // Data State
-  const [name, setName] = useState('');
-  const [contentType, setContentType] = useState(() => new URLSearchParams(window.location.search).get('type') || null); // null | 'photo' | 'video' | 'voice' | 'wishes'
+  const [name, setName] = useState("");
+  const [contentType, setContentType] = useState(
+    () => new URLSearchParams(window.location.search).get("type") || null,
+  ); // null | 'photo' | 'video' | 'voice' | 'wishes'
   const [frameIndex, setFrameIndex] = useState(0);
-  const [caption, setCaption] = useState('');
-  const [message, setMessage] = useState(''); // teks wishes mandiri
+  const [caption, setCaption] = useState("");
+  const [message, setMessage] = useState(""); // teks wishes mandiri
   const [videoBlob, setVideoBlob] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
-  const [videoOrientation, setVideoOrientation] = useState('portrait');
+  const [videoOrientation, setVideoOrientation] = useState("portrait");
   const [uploading, setUploading] = useState(false);
-  const [publishMode, setPublishMode] = useState('public');
+  const [publishMode, setPublishMode] = useState("public");
 
   // Refs
   const webcamRef = useRef(null);
@@ -56,7 +47,7 @@ export default function Capture() {
     audioBlob,
     startRecording,
     stopRecording,
-    clearAudio
+    clearAudio,
   } = useAudioRecorder();
 
   const {
@@ -70,141 +61,86 @@ export default function Capture() {
     proceedToConfirm,
     retakePhoto,
     confirmPhoto,
-    setShowConfirmDialog
+    setShowConfirmDialog,
   } = usePhotoCapture(webcamRef);
 
   const handleVideoNext = (blob, orientation) => {
     setVideoBlob(blob);
     setVideoUrl(URL.createObjectURL(blob));
-    setVideoOrientation(orientation || 'portrait');
+    setVideoOrientation(orientation || "portrait");
     setStep(4);
   };
 
   const handleUpload = async () => {
+    if (!name.trim()) {
+      showAlert("Nama wajib diisi.");
+      return;
+    }
+
+    // Wishes mandiri: cukup nama + pesan, tidak butuh foto/video/audio.
+    if (contentType === "wishes" && !message.trim()) {
+      showAlert("Nama dan pesan wishes wajib diisi.");
+      return;
+    }
+
+    // // Media utama wajib ada sesuai tipe konten
+    // if (
+    //   (contentType === "photo" && !photoSrc) ||
+    //   (contentType === "video" && !videoBlob) ||
+    //   (contentType === "voice" && !audioBlob)
+    // ) {
+    //   showAlert("Konten belum lengkap, silakan ulangi pengambilan.");
+    //   return;
+    // }
+
     setUploading(true);
     try {
-      const id = Date.now().toString();
-      let photoUrl = null;
-      let uploadedVideoUrl = null;
-      let audioUrl = null;
+      const form = new FormData();
+      form.append("name", name.trim());
+      form.append("type", contentType);
+      form.append("is_public", publishMode === "public");
 
-      // Wishes mandiri: cukup nama + pesan, tidak butuh foto/video/audio.
-      if (contentType === 'wishes') {
-        if (!name || !message.trim()) {
-          showAlert('Nama dan pesan wishes wajib diisi.');
-          setUploading(false);
-          return;
-        }
-
-        const { error: insertError } = await supabase.from('entries').insert({
-          id,
-          name,
-          type: 'wishes',
-          frame: FRAMES[0].id,
-          caption: message.trim(),
-          photo_url: '',
-          video_url: '',
-          audio_url: '',
-          is_public: publishMode === 'public',
-          timestamp: new Date().toISOString(),
-        });
-
-        if (insertError) throw insertError;
-        setStep(5);
-        return;
+      if (contentType === "wishes") {
+        form.append("frame", FRAMES[0].id);
+        form.append("caption", message.trim());
+      } else {
+        form.append(
+          "frame",
+          contentType === "photo"
+            ? FRAMES[frameIndex].id
+            : contentType === "video"
+              ? videoOrientation
+              : FRAMES[0].id,
+        );
+        form.append("caption", caption || "");
       }
 
-      // Upload foto ke Supabase Storage (flow foto)
-      if (contentType === 'photo' && photoSrc) {
-        const res = await fetch(photoSrc);
-        const blob = await res.blob();
-        const photoPath = `photo-${id}.jpg`;
-
-        const { error: photoError } = await supabase.storage
-          .from('Photos')
-          .upload(photoPath, blob, { contentType: 'image/jpeg' });
-
-        if (photoError) throw photoError;
-
-        const { data: photoPublicUrl } = supabase.storage
-          .from('Photos')
-          .getPublicUrl(photoPath);
-
-        photoUrl = photoPublicUrl.publicUrl;
+      // Foto (flow foto)
+      if (contentType === "photo" && photoSrc) {
+        const blob = await (await fetch(photoSrc)).blob();
+        form.append("photo", blob, "photo.jpg");
       }
 
-      // Upload video ke Supabase Storage (flow video) — bucket 'Videos'
-      // harus dibuat dulu di Supabase Storage dengan akses publik seperti 'Photos'.
-      if (contentType === 'video' && videoBlob) {
-        const mimeType = videoBlob.type || 'video/webm';
-        const ext = getExtensionFromMime(mimeType, 'webm');
-        const videoPath = `video-${id}.${ext}`;
-
-        const { error: videoError } = await supabase.storage
-          .from('Videos')
-          .upload(videoPath, videoBlob, { contentType: mimeType });
-
-        if (videoError) throw videoError;
-
-        const { data: videoPublicUrl } = supabase.storage
-          .from('Videos')
-          .getPublicUrl(videoPath);
-
-        uploadedVideoUrl = videoPublicUrl.publicUrl;
+      // Video (flow video)
+      if (contentType === "video" && videoBlob) {
+        form.append("video", videoBlob, "video");
       }
 
-      // Upload audio ke Supabase Storage.
-      // Untuk contentType === 'voice', ini JUGA konten utamanya (wajib ada,
-      // divalidasi di bawah). Untuk foto & video, audio ini opsional (caption suara).
-      if (audioBlob) {
-        const mimeType = audioBlob.type || 'audio/webm';
-        const ext = getExtensionFromMime(mimeType, 'webm');
-        const audioPath = `audio-${id}.${ext}`;
-
-        const { error: audioError } = await supabase.storage
-          .from('Audio')
-          .upload(audioPath, audioBlob, { contentType: mimeType });
-
-        if (audioError) throw audioError;
-
-        const { data: audioPublicUrl } = supabase.storage
-          .from('Audio')
-          .getPublicUrl(audioPath);
-
-        audioUrl = audioPublicUrl.publicUrl;
+      // Audio: konten utama untuk 'voice', opsional (caption suara) untuk foto & video
+      if (contentType !== "wishes" && audioBlob) {
+        form.append("audio", audioBlob, "audio");
       }
 
-      if (
-        !name ||
-        (contentType === 'photo' && !photoUrl) ||
-        (contentType === 'video' && !uploadedVideoUrl) ||
-        (contentType === 'voice' && !audioUrl)
-      ) {
-        showAlert('Nama wajib diisi.');
-        setUploading(false);
-        return;
-      }
-
-      // Insert row ke tabel entries
-      const { error: insertError } = await supabase.from('entries').insert({
-        id,
-        name,
-        type: contentType,
-        frame: contentType === 'photo' ? FRAMES[frameIndex].id : (contentType === 'video' ? videoOrientation : FRAMES[0].id),
-        caption: caption || '',
-        photo_url: photoUrl || '',
-        video_url: uploadedVideoUrl || '',
-        audio_url: audioUrl || '',
-        is_public: publishMode === 'public',
-        timestamp: new Date().toISOString(),
+      // Jangan set Content-Type manual, axios + browser otomatis isi boundary-nya
+      await axios.post(`${API_URL}/event-services/v1/entries`, form, {
+        timeout: 120000, // video bisa lama di koneksi lambat
       });
-
-      if (insertError) throw insertError;
 
       setStep(5);
     } catch (err) {
       console.error(err);
-      showAlert('Terjadi kesalahan saat mengunggah.');
+      const serverMessage = err.response?.data?.message;
+      showAlert(serverMessage || "Terjadi kesalahan saat mengunggah.");
     } finally {
       setUploading(false);
     }
@@ -214,14 +150,14 @@ export default function Capture() {
   const pageVariants = {
     initial: { opacity: 0, x: 20 },
     in: { opacity: 1, x: 0 },
-    out: { opacity: 0, x: -20 }
+    out: { opacity: 0, x: -20 },
   };
 
   // Photo memiliki step tambahan (preview), sedangkan yang lain langsung ke publish
-  const progressSteps =
-    contentType === 'photo' ? [1, 2, 3, 4] : [1, 2, 4];
+  const progressSteps = contentType === "photo" ? [1, 2, 3, 4] : [1, 2, 4];
 
-  const activeStep = (step === 2 && contentType === 'photo' && showConfirmDialog) ? 3 : step;
+  const activeStep =
+    step === 2 && contentType === "photo" && showConfirmDialog ? 3 : step;
 
   return (
     <div className="flex-1 min-h-0 flex flex-col w-full mx-auto p-4 relative">
@@ -229,9 +165,14 @@ export default function Capture() {
       {step < 5 && (step !== 1 || contentType) && (
         <div className="flex gap-2 mb-2 mt-4 relative z-10 w-full">
           {progressSteps.map((i) => (
-            <div key={i} className="h-1 flex-1 rounded-full overflow-hidden bg-maroon/20">
+            <div
+              key={i}
+              className="h-1 flex-1 rounded-full overflow-hidden bg-maroon/20"
+            >
               <div
-                className={`h-full transition-all duration-500 ease-out ${i <= activeStep ? 'bg-maroon' : 'bg-transparent'}`}
+                className={`h-full transition-all duration-500 ease-out ${
+                  i <= activeStep ? "bg-maroon" : "bg-transparent"
+                }`}
               />
             </div>
           ))}
@@ -261,7 +202,7 @@ export default function Capture() {
             />
           )}
 
-          {step === 2 && contentType === 'photo' && (
+          {step === 2 && contentType === "photo" && (
             <StepCamera
               frameIndex={frameIndex}
               webcamRef={webcamRef}
@@ -283,7 +224,7 @@ export default function Capture() {
             />
           )}
 
-          {step === 2 && contentType === 'video' && (
+          {step === 2 && contentType === "video" && (
             <StepVideoCapture
               onNext={handleVideoNext}
               onBack={() => setStep(1)}
@@ -291,7 +232,7 @@ export default function Capture() {
             />
           )}
 
-          {step === 2 && contentType === 'wishes' && (
+          {step === 2 && contentType === "wishes" && (
             <StepWishes
               message={message}
               setMessage={setMessage}
@@ -301,7 +242,7 @@ export default function Capture() {
             />
           )}
 
-          {step === 2 && contentType === 'voice' && (
+          {step === 2 && contentType === "voice" && (
             <StepVoiceCapture
               audioBlob={audioBlob}
               isRecording={isRecording}
@@ -325,7 +266,7 @@ export default function Capture() {
               uploading={uploading}
               handleUpload={handleUpload}
               onBack={() => {
-                if (contentType === 'photo') {
+                if (contentType === "photo") {
                   setShowConfirmDialog(true);
                 }
                 setStep(2);

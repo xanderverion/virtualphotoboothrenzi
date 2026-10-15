@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * useFeedEntries — fetch semua entries (foto/video/wishes) sekali saat mount,
@@ -11,40 +13,41 @@ export function useFeedEntries(mode = 'public') {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchEntries = async () => {
       try {
-        let query = supabase
-          .from('entries')
-          .select('*')
-          .order('timestamp', { ascending: false });
+        const res = await axios.get(`${API_URL}/event-services/v1/entries`, {
+          params: { mode },
+        });
 
-        if (mode === 'public') {
-          // Hanya ambil yang is_public true ATAU null (data lama)
-          query = query.or('is_public.eq.true,is_public.is.null');
-        }
+        // Sesuaikan path ini dengan bentuk response handleResponse lu
+        const body = res.data;
+        const list = body?.data ?? body?.response?.data ?? [];
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        const mapped = data.map((item) => ({
+        const mapped = list.map((item) => ({
           ...item,
           photoUrl: item.photo_url,
           audioUrl: item.audio_url,
           videoUrl: item.video_url,
-          // Data lama (sebelum migrasi) tidak punya kolom `type` — anggap 'photo'.
+          // Data lama (sebelum migrasi) tidak punya kolom `type`, anggap 'photo'.
           type: item.type || 'photo',
         }));
 
-        setEntries(mapped);
+        if (!cancelled) setEntries(mapped);
       } catch (err) {
         console.error('Failed to fetch entries', err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
+
     fetchEntries();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
 
   return { entries, loading };
 }
