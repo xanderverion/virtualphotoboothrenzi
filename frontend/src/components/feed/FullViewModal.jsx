@@ -1,5 +1,7 @@
-import { Play, Pause, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Play, Pause, X } from "lucide-react";
+import { motion } from "framer-motion";
+
+const IMAGE_URL = import.meta.env.VITE_URL_IMAGE;
 
 export default function FullViewModal({
   item,
@@ -7,27 +9,38 @@ export default function FullViewModal({
   playingId,
   handlePlayAudio,
   audioProgress,
-  audioCurrentTime
+  audioCurrentTime,
 }) {
   const formatTime = (timeInSeconds) => {
     if (!timeInSeconds || isNaN(timeInSeconds)) return "00:00";
     const m = Math.floor(timeInSeconds / 60);
     const s = Math.floor(timeInSeconds % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
   const isPlaying = playingId === item.id;
 
   const dateObj = new Date(item.timestamp || Date.now());
   const dateLabel = dateObj
-    .toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
     .toUpperCase();
   const timeLabel = dateObj
-    .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false })
-    .replace(':', '.');
+    .toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    })
+    .replace(":", ".");
 
   // Static waveform silhouette (visual only — real progress is driven by audioProgress)
-  const bars = [6, 10, 4, 14, 8, 18, 6, 12, 20, 9, 15, 5, 11, 17, 7, 13, 19, 6, 10, 4, 14, 8];
+  const bars = [
+    6, 10, 4, 14, 8, 18, 6, 12, 20, 9, 15, 5, 11, 17, 7, 13, 19, 6, 10, 4, 14,
+    8,
+  ];
 
   return (
     <motion.div
@@ -62,22 +75,22 @@ export default function FullViewModal({
         {/* Media preview card */}
         <div className="px-5 shrink-0">
           <div className="bg-broken-white rounded-2xl p-3 flex items-center justify-center">
-            {item.type === 'video' && item.videoUrl ? (
+            {item.type === "video" && item.videoUrl ? (
               <video
-                src={item.videoUrl}
-                className={`w-full h-auto rounded-sm mx-auto object-cover select-none [-webkit-touch-callout:none] ${item.frame === 'landscape' ? 'aspect-[16/9]' : 'aspect-[3/4]'}`}
+                src={`${IMAGE_URL}/${item.videoUrl}`}
+                className={`w-full h-auto rounded-sm mx-auto object-cover select-none [-webkit-touch-callout:none] ${item.frame === "landscape" ? "aspect-[16/9]" : "aspect-[3/4]"}`}
                 controls
                 playsInline
                 controlsList="nodownload"
                 onContextMenu={(e) => e.preventDefault()}
               />
-            ) : item.type === 'wishes' ? (
+            ) : item.type === "wishes" ? (
               <p className="text-maroon text-base italic text-center leading-relaxed py-8 px-2">
                 &ldquo;{item.caption}&rdquo;
               </p>
             ) : item.photoUrl ? (
               <img
-                src={item.photoUrl}
+                src={`${IMAGE_URL}/${item.photoUrl}`}
                 alt={item.name}
                 className="max-w-[170px] max-h-[280px] w-auto h-auto rounded-sm object-contain select-none [-webkit-touch-callout:none]"
                 draggable={false}
@@ -88,13 +101,14 @@ export default function FullViewModal({
         </div>
 
         {/* Audio pill — hanya untuk foto/video yang punya pesan suara */}
-        {item.type !== 'wishes' && item.audioUrl && (
+        {item.type !== "wishes" && item.audioUrl && (
           <div className="px-5 mt-4 shrink-0">
             <button
               onClick={() => {
-                if (item.audioUrl) handlePlayAudio(item.id, item.audioUrl);
+                if (item.audioUrl)
+                  handlePlayAudio(item.id, `${IMAGE_URL}/${item.audioUrl}`);
               }}
-              className={`w-full flex items-center gap-3 bg-broken-white rounded-full pl-2 pr-4 py-1.5 ${item.audioUrl ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}
+              className={`w-full flex items-center gap-3 bg-broken-white rounded-full pl-2 pr-4 py-1.5 ${item.audioUrl ? "cursor-pointer" : "cursor-not-allowed opacity-70"}`}
             >
               <span className="w-8 h-8 shrink-0 rounded-full border border-maroon/70 text-maroon flex items-center justify-center">
                 {isPlaying ? (
@@ -105,7 +119,7 @@ export default function FullViewModal({
               </span>
 
               <span className="text-maroon text-xs font-semibold tabular-nums shrink-0">
-                {isPlaying ? formatTime(audioCurrentTime) : '00:00'}
+                {isPlaying ? formatTime(audioCurrentTime) : "00:00"}
               </span>
 
               <span className="flex-1 flex items-center gap-[2px] h-4 overflow-hidden">
@@ -115,7 +129,7 @@ export default function FullViewModal({
                   return (
                     <span
                       key={i}
-                      className={`w-[2px] rounded-full ${active ? 'bg-maroon' : 'bg-maroon/30'}`}
+                      className={`w-[2px] rounded-full ${active ? "bg-maroon" : "bg-maroon/30"}`}
                       style={{ height: `${h}px` }}
                     ></span>
                   );
@@ -126,7 +140,7 @@ export default function FullViewModal({
         )}
 
         {/* Caption */}
-        {item.type !== 'wishes' && item.caption && (
+        {item.type !== "wishes" && item.caption && (
           <div className="px-5 mt-3 shrink-0">
             <span className="inline-block max-w-full break-words text-cream/90 text-sm italic leading-relaxed">
               &ldquo;{item.caption}&rdquo;
