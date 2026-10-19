@@ -17,6 +17,9 @@ import StepUploadAndSuccess from "../components/capture/StepUploadAndSuccess";
 // Set URL API lu di .env (contoh: VITE_API_URL=https://api.domain.com)
 const API_URL = import.meta.env.VITE_API_URL;
 
+const cleanBlob = (blob) =>
+  new Blob([blob], { type: (blob.type || "").split(";")[0].trim() });
+
 export default function Capture() {
   const { showAlert } = useAlert();
 
@@ -123,7 +126,7 @@ export default function Capture() {
 
       // Video (flow video)
       if (contentType === "video" && videoBlob) {
-        form.append("video", videoBlob, "video");
+        form.append("video", cleanBlob(videoBlob), "video");
       }
 
       // Audio: konten utama untuk 'voice', opsional (caption suara) untuk foto & video
